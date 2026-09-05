@@ -1,6 +1,6 @@
-import { serve, type Req, type Res } from "../src/http";
-import { mcpRoute } from "../src/routes";
+import type { Req, Res } from "../src/http";
+import { handleMcpHttp } from "../src/mcp-http";
 
 export default function handler(req: Req, res: Res) {
-  return serve(req, res, mcpRoute);
+  return handleMcpHttp(req, res);
 }

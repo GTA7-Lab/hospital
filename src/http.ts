@@ -15,7 +15,7 @@ export type Handler = (ctx: {
   body: any;
 }) => Result | Promise<Result>;
 
-function readBody(req: Req): Promise<any> {
+export function readBody(req: Req): Promise<any> {
   if (req.body !== undefined) return Promise.resolve(req.body); // ja parseado pela Vercel
   return new Promise((resolve) => {
     let raw = "";

@@ -1,6 +1,5 @@
 import type { Handler } from "./http";
 import { manifest } from "./manifest";
-import { handleRpc, type JsonRpcRequest } from "./mcp";
 import { db } from "./data";
 import {
   addHistoryEntry,
@@ -92,24 +91,11 @@ export const historyRoute: Handler = ({ method, body }) => {
   );
 };
 
-/** Endpoint MCP (JSON-RPC sobre HTTP). */
-export const mcpRoute: Handler = ({ method, body }) => {
-  if (method !== "POST") {
-    return {
-      status: 405,
-      body: { error: "Endpoint MCP: envie JSON-RPC 2.0 via POST", tools: manifest.tools },
-    };
-  }
-  const messages: JsonRpcRequest[] = Array.isArray(body) ? body : [body];
-  if (!body || messages.some((m) => m?.jsonrpc !== "2.0")) {
-    return { status: 400, body: { jsonrpc: "2.0", id: null, error: { code: -32600, message: "Requisicao JSON-RPC invalida" } } };
-  }
-  const responses = messages.map(handleRpc).filter((r) => r !== null);
-  if (responses.length === 0) return { status: 202, body: null };
-  return ok(Array.isArray(body) ? responses : responses[0]);
-};
-
-/** Tabela usada pelo servidor local (na Vercel cada arquivo em /api e uma funcao). */
+/**
+ * Tabela usada pelo servidor local (na Vercel cada arquivo em /api e uma funcao).
+ * O endpoint MCP nao entra aqui: ele precisa de controle direto do response para
+ * escrever SSE, e vive em src/mcp-http.ts.
+ */
 export const routes: Record<string, Handler> = {
   "/api/manifest": manifestRoute,
   "/api/hospital": hospitalRoute,
@@ -119,5 +105,4 @@ export const routes: Record<string, Handler> = {
   "/api/appointments": appointmentsRoute,
   "/api/exams": examsRoute,
   "/api/history": historyRoute,
-  "/api/mcp": mcpRoute,
 };

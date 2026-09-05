@@ -2,6 +2,7 @@ import * as http from "node:http";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { serve } from "./http";
+import { handleMcpHttp } from "./mcp-http";
 import { routes } from "./routes";
 
 /**
@@ -22,7 +23,12 @@ const MIME: Record<string, string> = {
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
 
-  const route = routes[pathname] ?? (pathname === "/mcp" ? routes["/api/mcp"] : undefined);
+  if (pathname === "/api/mcp" || pathname === "/mcp") {
+    void handleMcpHttp(req, res);
+    return;
+  }
+
+  const route = routes[pathname];
   if (route) {
     void serve(req, res, route);
     return;
@@ -37,7 +43,7 @@ const server = http.createServer((req, res) => {
 
   res.statusCode = 404;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify({ error: "Nao encontrado", routes: Object.keys(routes) }));
+  res.end(JSON.stringify({ error: "Nao encontrado", routes: [...Object.keys(routes), "/api/mcp"] }));
 });
 
 server.listen(PORT, () => {

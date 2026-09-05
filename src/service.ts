@@ -1,4 +1,5 @@
 import { db, normalize, nextId, persist } from "./data";
+import { lista } from "./format";
 import type { Appointment, Doctor, Exam, Patient } from "./types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -59,7 +60,12 @@ export function findPatient(patient: string): Patient | undefined {
 
 export function requirePatient(patient: string): Patient {
   const found = findPatient(patient);
-  if (!found) throw new ServiceError(`Paciente nao encontrado: "${patient}"`, 404);
+  if (!found) {
+    throw new ServiceError(
+      `Não encontrei ninguém chamado "${patient}" nos registros do Hospital Central GTA7. Vale tentar pelo nome completo ou pelo número do prontuário.`,
+      404
+    );
+  }
   return found;
 }
 
@@ -99,7 +105,9 @@ const URGENCY_ORDER = ["baixa", "media", "alta", "emergencia"];
  */
 export function checkSymptoms(symptoms: string[]) {
   const wanted = symptoms.map(normalize).filter(Boolean);
-  if (wanted.length === 0) throw new ServiceError("Informe ao menos um sintoma");
+  if (wanted.length === 0) {
+    throw new ServiceError("Me conte pelo menos um sintoma para eu poder ajudar.");
+  }
 
   const matches = db.conditions
     .map((c) => {
@@ -131,19 +139,23 @@ export function checkSymptoms(symptoms: string[]) {
     emergency,
     recommendedSpecialty: top ? top.specialty : "clinica_geral",
     nextStep: emergency
-      ? `Procurar o pronto-socorro agora ou ligar ${db.hospital.emergency}.`
+      ? `Vá ao pronto-socorro agora ou ligue para o ${db.hospital.emergency}.`
       : top
-        ? `Agendar consulta em ${top.specialty} no ${db.hospital.name}.`
-        : "Sintomas nao mapeados. Agendar consulta em clinica_geral para avaliacao.",
+        ? `Vale marcar uma consulta no ${db.hospital.name}.`
+        : `Marque uma consulta de clínica geral no ${db.hospital.name} para uma avaliação.`,
     possibleConditions: matches,
     disclaimer:
-      "Triagem informativa da cidade GTA7 Lab. Nao substitui avaliacao medica presencial.",
+      "Isto é uma orientação inicial e não substitui uma consulta médica. Se piorar, procure atendimento.",
   };
 }
 
 function validateDateTime(date: string, time: string) {
-  if (!DATE_RE.test(date)) throw new ServiceError("Data invalida. Use o formato AAAA-MM-DD");
-  if (!TIME_RE.test(time)) throw new ServiceError("Hora invalida. Use o formato HH:MM");
+  if (!DATE_RE.test(date)) {
+    throw new ServiceError("Não entendi a data. Ela precisa vir como ano-mês-dia, por exemplo 2026-11-03.");
+  }
+  if (!TIME_RE.test(time)) {
+    throw new ServiceError("Não entendi o horário. Ele precisa vir como hora:minuto, por exemplo 14:30.");
+  }
 }
 
 export function scheduleAppointment(input: {
@@ -158,14 +170,21 @@ export function scheduleAppointment(input: {
   const doctor = listDoctors(input.specialty)[0];
   if (!doctor) {
     throw new ServiceError(
-      `Especialidade nao atendida: "${input.specialty}". Disponiveis: ${db.specialties.join(", ")}`
+      `O Hospital Central GTA7 não atende "${input.specialty}". As especialidades disponíveis são ${db.specialties
+        .map((s) => s.replace(/_/g, " "))
+        .join(", ")}.`
     );
   }
 
   const clash = db.appointments.find(
     (a) => a.doctorId === doctor.id && a.date === input.date && a.time === input.time
   );
-  if (clash) throw new ServiceError(`${doctor.name} ja tem consulta em ${input.date} ${input.time}`, 409);
+  if (clash) {
+    throw new ServiceError(
+      `${doctor.name} já tem uma consulta marcada nesse dia e horário. Escolha outro horário.`,
+      409
+    );
+  }
 
   const appointment: Appointment = {
     id: nextId("apt", db.appointments),
@@ -189,7 +208,7 @@ export function scheduleExam(input: {
 }): Exam & { patientName: string } {
   const p = requirePatient(input.patient);
   validateDateTime(input.date, input.time);
-  if (!input.exam?.trim()) throw new ServiceError("Informe o nome do exame");
+  if (!input.exam?.trim()) throw new ServiceError("Me diga qual exame você quer marcar.");
 
   const exam: Exam = {
     id: nextId("exm", db.exams),
@@ -226,10 +245,14 @@ export function addHistoryEntry(input: {
 }) {
   const p = requirePatient(input.patient);
   const types = ["consulta", "exame", "procedimento", "tratamento"];
-  if (!types.includes(input.type)) throw new ServiceError(`type deve ser um de: ${types.join(", ")}`);
-  if (!input.description?.trim()) throw new ServiceError("Informe a descricao do registro");
+  if (!types.includes(input.type)) {
+    throw new ServiceError(`O registro precisa ser uma ${lista(types)}.`);
+  }
+  if (!input.description?.trim()) throw new ServiceError("Me diga o que aconteceu no atendimento.");
   const date = input.date ?? new Date().toISOString().slice(0, 10);
-  if (!DATE_RE.test(date)) throw new ServiceError("Data invalida. Use o formato AAAA-MM-DD");
+  if (!DATE_RE.test(date)) {
+    throw new ServiceError("Não entendi a data. Ela precisa vir como ano-mês-dia, por exemplo 2026-11-03.");
+  }
 
   const entry = {
     date,

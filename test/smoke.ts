@@ -31,7 +31,7 @@ check("detecta emergencia", infarto.emergency === true);
 check("recomenda cardiologia", infarto.recommendedSpecialty === "cardiologia");
 const gripe = checkSymptoms(["febre", "tosse", "coriza"]);
 check("acentuacao tolerada", checkSymptoms(["dor de cabeça"]).possibleConditions.length > 0);
-check("gripe como hipotese principal", gripe.possibleConditions[0].condition === "Gripe (influenza)");
+check("gripe como hipotese principal", gripe.possibleConditions[0].condition === "Gripe");
 
 console.log("agendamento");
 const apt = scheduleAppointment({
@@ -46,13 +46,13 @@ try {
   scheduleAppointment({ patient: "Beatriz", specialty: "cardiologia", date: "2026-10-01", time: "08:00" });
   check("conflito de horario rejeitado", false);
 } catch (e) {
-  check("conflito de horario rejeitado", (e as Error).message.includes("ja tem consulta"));
+  check("conflito de horario rejeitado", (e as Error).message.includes("já tem uma consulta"));
 }
 try {
   scheduleAppointment({ patient: "Beatriz", specialty: "cardiologia", date: "01/10/2026", time: "08:00" });
   check("data invalida rejeitada", false);
 } catch (e) {
-  check("data invalida rejeitada", (e as Error).message.includes("Data invalida"));
+  check("data invalida rejeitada", (e as Error).message.includes("Não entendi a data"));
 }
 
 console.log("mcp");
@@ -75,6 +75,31 @@ const err: any = handleRpc({
   params: { name: "get_patient_record", arguments: { patient: "ninguem" } },
 });
 check("paciente inexistente vira isError", err.result.isError === true);
+
+console.log("texto para o usuario");
+const texto: string = call.result.content[0].text;
+check("nao vaza JSON no texto", !texto.includes("{") && !texto.includes('"'));
+check("nao vaza chave tecnica", !/patientId|doctorId|bloodType|admission/.test(texto));
+check("diz a internacao sem marcar genero", texto.includes("no quarto 108-A"));
+check("nao arrisca genero do paciente", !/internad[oa]\b/.test(texto));
+check("data por extenso", texto.includes("28 de agosto de 2026"));
+check("cita o medico pelo nome", texto.includes("Dra. Rita Nakamura"));
+
+const triagem: any = handleRpc({
+  jsonrpc: "2.0",
+  id: 5,
+  method: "tools/call",
+  params: { name: "check_symptoms", arguments: { symptoms: ["dor no peito", "suor frio"] } },
+});
+const textoTriagem: string = triagem.result.content[0].text;
+check("abre falando do sintoma", textoTriagem.startsWith("Pelo que você descreveu"));
+check("avisa da emergencia", textoTriagem.includes("emergência"));
+check("manda ligar 192", textoTriagem.includes("192"));
+check("nao mostra score", !textoTriagem.includes("score") && !textoTriagem.includes("0."));
+
+const erroTexto: string = err.result.content[0].text;
+check("erro e amigavel", erroTexto.startsWith("Não encontrei ninguém"));
+check("erro nao tem termo tecnico", !/404|null|undefined|error/i.test(erroTexto));
 
 console.log(failures === 0 ? "\nTodos os testes passaram." : `\n${failures} teste(s) falharam.`);
 process.exit(failures === 0 ? 0 : 1);

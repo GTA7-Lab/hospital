@@ -52,6 +52,13 @@ A busca por paciente é tolerante: aceita id ou nome parcial, sem acento e sem
 diferenciar maiúsculas. `check_symptoms` faz o mesmo com os sintomas, então "dor de
 cabeça" e "dor de cabeca" caem no mesmo lugar.
 
+**As respostas são escritas para uma pessoa ler.** Cada tool devolve duas coisas: o texto
+em `content[].text`, em português corrido, sem JSON, sem chave técnica e sem código
+interno; e os dados crus em `structuredContent`, para quem for processar. Os erros seguem
+a mesma regra — "Não encontrei ninguém chamado X nos registros", não `404 not found`.
+Como os dados não guardam gênero, o texto usa frases neutras ("Sem internação no
+momento") em vez de arriscar "internado" ou "internada".
+
 ```bash
 curl -X POST https://gta7-hospital-e-vision-09ff.vercel.app/api/mcp \
   -H "Content-Type: application/json" \

@@ -20,7 +20,7 @@
     { "id": "doc-001", "name": "Dra. Helena Marques", "specialty": "cardiologia", "crm": "SP-11234", "days": ["seg", "qua", "sex"] },
     { "id": "doc-002", "name": "Dr. Paulo Ferraz", "specialty": "clinica_geral", "crm": "SP-22871", "days": ["seg", "ter", "qua", "qui", "sex"] },
     { "id": "doc-003", "name": "Dra. Rita Nakamura", "specialty": "ortopedia", "crm": "SP-30455", "days": ["ter", "qui"] },
-    { "id": "doc-004", "name": "Dr. Sergio Bastos", "specialty": "neurologia", "crm": "SP-40912", "days": ["qua", "sex"] },
+    { "id": "doc-004", "name": "Dr. Sérgio Bastos", "specialty": "neurologia", "crm": "SP-40912", "days": ["qua", "sex"] },
     { "id": "doc-005", "name": "Dra. Ana Prado", "specialty": "pediatria", "crm": "SP-51780", "days": ["seg", "ter", "qui"] },
     { "id": "doc-006", "name": "Dr. Miguel Souza", "specialty": "gastroenterologia", "crm": "SP-60334", "days": ["ter", "sex"] },
     { "id": "doc-007", "name": "Dra. Clara Bittencourt", "specialty": "dermatologia", "crm": "SP-70119", "days": ["qua", "qui"] }
@@ -32,12 +32,12 @@
       "birthDate": "1978-04-12",
       "bloodType": "O+",
       "allergies": ["dipirona"],
-      "chronicConditions": ["hipertensao"],
-      "admission": { "room": "302-B", "since": "2026-09-01", "reason": "Crise hipertensiva em observacao" },
+      "chronicConditions": ["hipertensão"],
+      "admission": { "room": "302-B", "since": "2026-09-01", "reason": "Crise hipertensiva em observação" },
       "medicalHistory": [
-        { "date": "2026-09-01", "type": "procedimento", "description": "Monitoramento cardiaco continuo", "doctorId": "doc-001" },
-        { "date": "2025-11-20", "type": "consulta", "description": "Consulta de rotina - ajuste de losartana 50mg", "doctorId": "doc-001" },
-        { "date": "2025-03-10", "type": "exame", "description": "Eletrocardiograma - alteracao leve de repolarizacao", "doctorId": "doc-001" }
+        { "date": "2026-09-01", "type": "procedimento", "description": "Monitoramento cardíaco contínuo", "doctorId": "doc-001" },
+        { "date": "2025-11-20", "type": "consulta", "description": "Consulta de rotina, com ajuste de losartana 50mg", "doctorId": "doc-001" },
+        { "date": "2025-03-10", "type": "exame", "description": "Eletrocardiograma, com alteração leve de repolarização", "doctorId": "doc-001" }
       ]
     },
     {
@@ -49,8 +49,8 @@
       "chronicConditions": ["asma"],
       "admission": null,
       "medicalHistory": [
-        { "date": "2026-07-14", "type": "consulta", "description": "Crise asmatica leve - prescrito broncodilatador", "doctorId": "doc-002" },
-        { "date": "2024-02-05", "type": "tratamento", "description": "Fisioterapia respiratoria - 10 sessoes", "doctorId": "doc-002" }
+        { "date": "2026-07-14", "type": "consulta", "description": "Crise asmática leve, com broncodilatador prescrito", "doctorId": "doc-002" },
+        { "date": "2024-02-05", "type": "tratamento", "description": "Fisioterapia respiratória, 10 sessões", "doctorId": "doc-002" }
       ]
     },
     {
@@ -60,11 +60,11 @@
       "bloodType": "B+",
       "allergies": ["penicilina"],
       "chronicConditions": ["diabetes tipo 2"],
-      "admission": { "room": "108-A", "since": "2026-08-28", "reason": "Pos-operatorio de artroplastia de joelho" },
+      "admission": { "room": "108-A", "since": "2026-08-28", "reason": "Pós-operatório de artroplastia de joelho" },
       "medicalHistory": [
         { "date": "2026-08-28", "type": "procedimento", "description": "Artroplastia total de joelho direito", "doctorId": "doc-003" },
-        { "date": "2026-08-10", "type": "exame", "description": "Ressonancia magnetica de joelho direito", "doctorId": "doc-003" },
-        { "date": "2025-06-22", "type": "consulta", "description": "Dor cronica em joelho direito - artrose grau III", "doctorId": "doc-003" }
+        { "date": "2026-08-10", "type": "exame", "description": "Ressonância magnética de joelho direito", "doctorId": "doc-003" },
+        { "date": "2025-06-22", "type": "consulta", "description": "Dor crônica em joelho direito, artrose grau III", "doctorId": "doc-003" }
       ]
     },
     {
@@ -76,34 +76,34 @@
       "chronicConditions": [],
       "admission": null,
       "medicalHistory": [
-        { "date": "2026-06-03", "type": "consulta", "description": "Puericultura - desenvolvimento adequado", "doctorId": "doc-005" },
-        { "date": "2025-09-19", "type": "tratamento", "description": "Amoxicilina 250mg por 7 dias - otite media", "doctorId": "doc-005" }
+        { "date": "2026-06-03", "type": "consulta", "description": "Puericultura, desenvolvimento adequado", "doctorId": "doc-005" },
+        { "date": "2025-09-19", "type": "tratamento", "description": "Amoxicilina 250mg por 7 dias, para otite média", "doctorId": "doc-005" }
       ]
     },
     {
       "id": "pat-005",
-      "name": "Rogerio Tavares",
+      "name": "Rogério Tavares",
       "birthDate": "1988-12-02",
       "bloodType": "AB+",
       "allergies": [],
-      "chronicConditions": ["enxaqueca cronica"],
+      "chronicConditions": ["enxaqueca crônica"],
       "admission": null,
       "medicalHistory": [
-        { "date": "2026-08-15", "type": "consulta", "description": "Enxaqueca com aura - inicio de profilaxia", "doctorId": "doc-004" },
-        { "date": "2026-08-16", "type": "exame", "description": "Tomografia de cranio - sem alteracoes", "doctorId": "doc-004" }
+        { "date": "2026-08-15", "type": "consulta", "description": "Enxaqueca com aura, início de profilaxia", "doctorId": "doc-004" },
+        { "date": "2026-08-16", "type": "exame", "description": "Tomografia de crânio, sem alterações", "doctorId": "doc-004" }
       ]
     },
     {
       "id": "pat-006",
-      "name": "Lucia Ferreira",
+      "name": "Lúcia Ferreira",
       "birthDate": "1951-03-25",
       "bloodType": "A+",
       "allergies": ["sulfa"],
-      "chronicConditions": ["hipertensao", "osteoporose"],
+      "chronicConditions": ["hipertensão", "osteoporose"],
       "admission": null,
       "medicalHistory": [
-        { "date": "2026-05-11", "type": "exame", "description": "Densitometria ossea - osteoporose em colo femoral", "doctorId": "doc-003" },
-        { "date": "2026-05-12", "type": "tratamento", "description": "Suplementacao de calcio e vitamina D", "doctorId": "doc-002" }
+        { "date": "2026-05-11", "type": "exame", "description": "Densitometria óssea, com osteoporose em colo femoral", "doctorId": "doc-003" },
+        { "date": "2026-05-12", "type": "tratamento", "description": "Suplementação de cálcio e vitamina D", "doctorId": "doc-002" }
       ]
     }
   ],
@@ -114,73 +114,73 @@
   ],
   "exams": [
     { "id": "exm-001", "patientId": "pat-002", "name": "Hemograma completo", "date": "2026-09-08", "time": "07:30", "status": "agendado", "result": null },
-    { "id": "exm-002", "patientId": "pat-006", "name": "Densitometria ossea", "date": "2026-09-22", "time": "08:00", "status": "agendado", "result": null },
-    { "id": "exm-003", "patientId": "pat-001", "name": "Ecocardiograma", "date": "2026-09-03", "time": "11:00", "status": "concluido", "result": "Fracao de ejecao 58% - dentro da normalidade" }
+    { "id": "exm-002", "patientId": "pat-006", "name": "Densitometria óssea", "date": "2026-09-22", "time": "08:00", "status": "agendado", "result": null },
+    { "id": "exm-003", "patientId": "pat-001", "name": "Ecocardiograma", "date": "2026-09-03", "time": "11:00", "status": "concluído", "result": "Fração de ejeção de 58%, dentro da normalidade" }
   ],
   "conditions": [
     {
       "id": "cond-001",
-      "name": "Gripe (influenza)",
-      "symptoms": ["febre", "tosse", "dor de cabeca", "coriza", "dor no corpo"],
+      "name": "Gripe",
+      "symptoms": ["febre", "tosse", "dor de cabeça", "coriza", "dor no corpo"],
       "specialty": "clinica_geral",
       "urgency": "baixa",
-      "guidance": "Repouso, hidratacao e antitermico se houver febre. Procurar atendimento se surgir falta de ar ou febre acima de 39C por mais de 3 dias."
+      "guidance": "Descanse, beba bastante líquido e tome um antitérmico se tiver febre. Procure atendimento se aparecer falta de ar, ou se a febre passar de 39 graus por mais de três dias."
     },
     {
       "id": "cond-002",
-      "name": "Infarto agudo do miocardio",
-      "symptoms": ["dor no peito", "falta de ar", "suor frio", "dor no braco esquerdo", "nausea"],
+      "name": "Infarto do miocárdio",
+      "symptoms": ["dor no peito", "falta de ar", "suor frio", "dor no braço esquerdo", "náusea"],
       "specialty": "cardiologia",
       "urgency": "emergencia",
-      "guidance": "Emergencia medica. Acionar o 192 imediatamente e nao dirigir ate o hospital."
+      "guidance": "Ligue para o 192 agora mesmo. Não vá dirigindo até o hospital e não espere para ver se melhora."
     },
     {
       "id": "cond-003",
-      "name": "Crise asmatica",
+      "name": "Crise de asma",
       "symptoms": ["falta de ar", "chiado no peito", "tosse", "aperto no peito"],
       "specialty": "clinica_geral",
       "urgency": "alta",
-      "guidance": "Usar o broncodilatador de resgate e procurar o pronto-socorro se nao houver melhora em 20 minutos."
+      "guidance": "Use a bombinha de resgate. Se não melhorar em 20 minutos, vá ao pronto-socorro."
     },
     {
       "id": "cond-004",
       "name": "Enxaqueca",
-      "symptoms": ["dor de cabeca", "nausea", "sensibilidade a luz", "visao turva"],
+      "symptoms": ["dor de cabeça", "náusea", "sensibilidade à luz", "visão turva"],
       "specialty": "neurologia",
       "urgency": "media",
-      "guidance": "Ambiente escuro e silencioso, analgesico prescrito. Avaliacao neurologica se as crises forem frequentes."
+      "guidance": "Fique num lugar escuro e silencioso e tome o analgésico que já foi receitado. Se as crises forem frequentes, vale uma avaliação com neurologista."
     },
     {
       "id": "cond-005",
-      "name": "Fratura ossea",
-      "symptoms": ["dor intensa", "inchaco", "deformidade", "incapacidade de movimento"],
+      "name": "Fratura",
+      "symptoms": ["dor intensa", "inchaço", "deformidade", "incapacidade de movimento"],
       "specialty": "ortopedia",
       "urgency": "alta",
-      "guidance": "Imobilizar o membro sem tentar realinhar e ir ao pronto-socorro para raio-X."
+      "guidance": "Mantenha o membro imóvel, sem tentar colocar no lugar, e vá ao pronto-socorro para tirar um raio-X."
     },
     {
       "id": "cond-006",
       "name": "Gastroenterite",
-      "symptoms": ["nausea", "vomito", "diarreia", "dor abdominal", "febre"],
+      "symptoms": ["náusea", "vômito", "diarreia", "dor abdominal", "febre"],
       "specialty": "gastroenterologia",
       "urgency": "media",
-      "guidance": "Hidratacao oral e dieta leve. Procurar atendimento se houver sangue nas fezes ou sinais de desidratacao."
+      "guidance": "Beba bastante líquido e faça uma dieta leve. Procure atendimento se houver sangue nas fezes ou sinais de desidratação."
     },
     {
       "id": "cond-007",
-      "name": "Dermatite alergica",
-      "symptoms": ["coceira", "vermelhidao", "descamacao", "manchas na pele"],
+      "name": "Dermatite alérgica",
+      "symptoms": ["coceira", "vermelhidão", "descamação", "manchas na pele"],
       "specialty": "dermatologia",
       "urgency": "baixa",
-      "guidance": "Evitar o agente irritante, usar hidratante sem fragrancia e agendar consulta dermatologica."
+      "guidance": "Afaste o que está irritando a pele, use um hidratante sem perfume e marque uma consulta com dermatologista."
     },
     {
       "id": "cond-008",
       "name": "Crise hipertensiva",
-      "symptoms": ["dor de cabeca", "visao turva", "tontura", "dor no peito"],
+      "symptoms": ["dor de cabeça", "visão turva", "tontura", "dor no peito"],
       "specialty": "cardiologia",
       "urgency": "alta",
-      "guidance": "Medir a pressao e procurar atendimento imediato se estiver acima de 180/120 mmHg."
+      "guidance": "Meça a pressão. Se estiver acima de 18 por 12, procure atendimento imediatamente."
     }
   ]
 }

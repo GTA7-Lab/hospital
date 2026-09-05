@@ -64,6 +64,12 @@ test/smoke.ts        testes de fumaca
 - **`src/routes.ts` como fonte unica**: as funcoes em `api/` e o servidor local usam os
   mesmos handlers.
 - Busca de paciente aceita id ou nome parcial, sem acento e sem caixa.
+- **Resposta das tools e texto para pessoa, nao JSON.** `content[].text` sai de
+  `src/tools.ts` (funcoes `diz*`) com ajuda de `src/format.ts` (datas, idade, listas,
+  rotulos). O JSON cru vai em `structuredContent`. As mensagens de erro de
+  `src/service.ts` tambem sao escritas para o usuario final, porque chegam nele.
+  Os dados em `data/hospital.json` sao acentuados por isso: aparecem citados no texto.
+  Frases neutras de genero, ja que o JSON nao guarda genero do paciente.
 
 ## Status
 

@@ -70,7 +70,7 @@ test/smoke.ts        testes de fumaca
 Primeira versao completa e validada localmente: 21/21 testes passando, servidor local,
 endpoint MCP HTTP e transporte stdio testados de ponta a ponta.
 
-A entidade vive em repositorio proprio, `GTA7-Lab/hospital` (privado), com o projeto na
+A entidade vive em repositorio proprio, `GTA7-Lab/hospital` (publico), com o projeto na
 raiz. Antes ficava em `entities/hospital/` no monorepo `GTA7-Lab/gta7-lab`; o branch
 `entidade/hospital` de la foi apagado.
 

@@ -1,0 +1,17 @@
+{
+  "name": "gta7-hospital",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hospital Central GTA7 - entidade da cidade digital GTA7 Lab (API REST + MCP)",
+  "scripts": {
+    "compile": "tsc",
+    "dev": "npm run compile && node dist/src/server.js",
+    "start": "node dist/src/server.js",
+    "mcp": "node dist/src/mcp-stdio.js",
+    "test": "npm run compile && node dist/test/smoke.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  }
+}

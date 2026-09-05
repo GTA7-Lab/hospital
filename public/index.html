@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hospital Central GTA7</title>
+    <style>
+      :root { --bg:#0f1720; --card:#18222e; --line:#2a3846; --txt:#e6edf3; --dim:#93a4b5; --acc:#4cc2a0; --warn:#e5b567; --err:#e56767; }
+      * { box-sizing: border-box; }
+      body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--txt); }
+      header { padding:20px; border-bottom:1px solid var(--line); }
+      h1 { margin:0 0 4px; font-size:20px; }
+      header p { margin:0; color:var(--dim); font-size:13px; }
+      main { max-width:900px; margin:0 auto; padding:20px; }
+      nav { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+      nav button { background:var(--card); color:var(--dim); border:1px solid var(--line); border-radius:6px; padding:8px 14px; cursor:pointer; font-size:14px; }
+      nav button.on { color:var(--txt); border-color:var(--acc); }
+      section { display:none; }
+      section.on { display:block; }
+      .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+      input, select { background:var(--card); color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:14px; }
+      input { flex:1; min-width:140px; }
+      .go { background:var(--acc); color:#0f1720; border:none; border-radius:6px; padding:8px 16px; font-weight:600; cursor:pointer; }
+      .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:10px; }
+      .card h3 { margin:0 0 6px; font-size:15px; }
+      .card p { margin:2px 0; font-size:13px; color:var(--dim); }
+      .tag { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; border:1px solid var(--line); margin-left:6px; vertical-align:middle; }
+      .in { color:var(--warn); border-color:var(--warn); }
+      .out { color:var(--acc); border-color:var(--acc); }
+      .u-emergencia,.u-alta { color:var(--err); }
+      .u-media { color:var(--warn); }
+      .u-baixa { color:var(--acc); }
+      .clickable { cursor:pointer; }
+      .msg { padding:10px 12px; border-radius:6px; border:1px solid var(--line); font-size:13px; margin-bottom:10px; }
+      .msg.err { border-color:var(--err); color:var(--err); }
+      ul { margin:6px 0 0; padding-left:18px; font-size:13px; color:var(--dim); }
+      footer { border-top:1px solid var(--line); padding:14px 20px; color:var(--dim); font-size:12px; text-align:center; }
+      code { background:#0b1219; padding:1px 5px; border-radius:4px; font-size:12px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Hospital Central GTA7</h1>
+      <p id="sub">Entidade da cidade GTA7 Lab</p>
+    </header>
+
+    <main>
+      <nav>
+        <button data-tab="pacientes" class="on">Pacientes</button>
+        <button data-tab="triagem">Triagem</button>
+        <button data-tab="agendar">Agendar</button>
+      </nav>
+
+      <section id="pacientes" class="on">
+        <div class="row">
+          <input id="q" placeholder="Buscar por nome ou id (pat-001)" />
+          <select id="filtro">
+            <option value="">Todos</option>
+            <option value="true">Internados</option>
+            <option value="false">Nao internados</option>
+          </select>
+          <button class="go" id="buscar">Buscar</button>
+        </div>
+        <div id="lista"></div>
+        <div id="prontuario"></div>
+      </section>
+
+      <section id="triagem">
+        <div class="row">
+          <input id="sintomas" placeholder="Sintomas separados por virgula: febre, tosse" />
+          <button class="go" id="analisar">Analisar</button>
+        </div>
+        <div id="resultado"></div>
+      </section>
+
+      <section id="agendar">
+        <div class="row">
+          <input id="ag-paciente" placeholder="Paciente (nome ou id)" />
+          <select id="ag-especialidade"></select>
+        </div>
+        <div class="row">
+          <input id="ag-data" type="date" />
+          <input id="ag-hora" type="time" />
+          <button class="go" id="marcar">Marcar consulta</button>
+        </div>
+        <div id="ag-resultado"></div>
+      </section>
+    </main>
+
+    <footer>
+      API: <code>/api/manifest</code> · <code>/api/patients</code> · <code>/api/symptoms</code> · MCP:
+      <code>/api/mcp</code>
+    </footer>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const get = (url) => fetch(url).then((r) => r.json());
+
+      document.querySelectorAll("nav button").forEach((b) =>
+        b.addEventListener("click", () => {
+          document.querySelectorAll("nav button").forEach((x) => x.classList.remove("on"));
+          document.querySelectorAll("section").forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          $(b.dataset.tab).classList.add("on");
+        })
+      );
+
+      get("/api/hospital").then((h) => {
+        $("sub").textContent = `${h.address} · ${h.phone} · emergencia ${h.emergency} · ${h.patients} pacientes, ${h.admitted} internados`;
+        $("ag-especialidade").innerHTML = h.specialties
+          .map((s) => `<option value="${s}">${s.replace("_", " ")}</option>`)
+          .join("");
+      });
+
+      async function buscar() {
+        const params = new URLSearchParams({ q: $("q").value, admitted: $("filtro").value });
+        const { patients } = await get("/api/patients?" + params);
+        $("prontuario").innerHTML = "";
+        $("lista").innerHTML = patients.length
+          ? patients
+              .map(
+                (p) => `<div class="card clickable" data-id="${p.id}">
+                  <h3>${p.name}<span class="tag ${p.admitted ? "in" : "out"}">${p.admitted ? "internado - quarto " + p.room : "nao internado"}</span></h3>
+                  <p>${p.id} · nascimento ${p.birthDate} · tipo sanguineo ${p.bloodType}</p>
+                </div>`
+              )
+              .join("")
+          : `<div class="msg">Nenhum paciente encontrado.</div>`;
+        document.querySelectorAll("#lista .card").forEach((c) =>
+          c.addEventListener("click", () => prontuario(c.dataset.id))
+        );
+      }
+
+      async function prontuario(id) {
+        const p = await get("/api/patients?patient=" + encodeURIComponent(id));
+        $("prontuario").innerHTML = `<div class="card">
+          <h3>Prontuario de ${p.name}<span class="tag ${p.admitted ? "in" : "out"}">${p.admitted ? "internado" : "nao internado"}</span></h3>
+          ${p.admitted ? `<p>Quarto ${p.admission.room} desde ${p.admission.since} - ${p.admission.reason}</p>` : ""}
+          <p>Alergias: ${p.allergies.join(", ") || "nenhuma"} · Condicoes cronicas: ${p.chronicConditions.join(", ") || "nenhuma"}</p>
+          <p><b>Historico medico</b></p>
+          <ul>${p.medicalHistory.map((h) => `<li>${h.date} · ${h.type} · ${h.description} (${h.doctor})</li>`).join("")}</ul>
+          <p><b>Consultas</b></p>
+          <ul>${p.appointments.map((a) => `<li>${a.date} ${a.time} · ${a.specialty} · ${a.doctor} (${a.status})</li>`).join("") || "<li>nenhuma</li>"}</ul>
+          <p><b>Exames</b></p>
+          <ul>${p.exams.map((e) => `<li>${e.date} ${e.time} · ${e.name} (${e.status})${e.result ? " · " + e.result : ""}</li>`).join("") || "<li>nenhum</li>"}</ul>
+        </div>`;
+      }
+
+      async function analisar() {
+        const r = await get("/api/symptoms?symptoms=" + encodeURIComponent($("sintomas").value));
+        if (r.error) return ($("resultado").innerHTML = `<div class="msg err">${r.error}</div>`);
+        $("resultado").innerHTML =
+          `<div class="msg">${r.nextStep} Especialidade recomendada: <b>${r.recommendedSpecialty}</b>.</div>` +
+          r.possibleConditions
+            .map(
+              (c) => `<div class="card">
+                <h3>${c.condition} <span class="tag u-${c.urgency}">urgencia ${c.urgency}</span></h3>
+                <p>Sintomas coincidentes: ${c.matchedSymptoms.join(", ")} (${Math.round(c.score * 100)}%)</p>
+                <p>${c.guidance}</p>
+              </div>`
+            )
+            .join("") +
+          `<p style="color:var(--dim);font-size:12px">${r.disclaimer}</p>`;
+      }
+
+      async function marcar() {
+        const res = await fetch("/api/appointments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient: $("ag-paciente").value,
+            specialty: $("ag-especialidade").value,
+            date: $("ag-data").value,
+            time: $("ag-hora").value,
+          }),
+        });
+        const r = await res.json();
+        $("ag-resultado").innerHTML = r.error
+          ? `<div class="msg err">${r.error}</div>`
+          : `<div class="msg">Consulta ${r.id} marcada para ${r.patientName} com ${r.doctor} (${r.specialty}) em ${r.date} as ${r.time}.</div>`;
+      }
+
+      $("buscar").addEventListener("click", buscar);
+      $("q").addEventListener("keydown", (e) => e.key === "Enter" && buscar());
+      $("analisar").addEventListener("click", analisar);
+      $("sintomas").addEventListener("keydown", (e) => e.key === "Enter" && analisar());
+      $("marcar").addEventListener("click", marcar);
+      buscar();
+    </script>
+  </body>
+</html>

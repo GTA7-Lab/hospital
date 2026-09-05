@@ -1,0 +1,44 @@
+{
+  "id": "hospital",
+  "name": "Hospital Central GTA7",
+  "description": "Hospital da cidade GTA7 Lab: prontuários e histórico médico, triagem por sintomas com nível de urgência, agendamento de consultas e exames e status de internação dos pacientes.",
+  "capabilities": [
+    "consultar_prontuario",
+    "consultar_historico_medico",
+    "verificar_internacao",
+    "triagem_por_sintomas",
+    "agendar_consulta",
+    "agendar_exame",
+    "consultar_medicos"
+  ],
+  "mcp": {
+    "transport": "http",
+    "endpoint": "/api/mcp",
+    "tools": [
+      {
+        "name": "get_patient_record",
+        "description": "Retorna o prontuário de um paciente pelo id ou por parte do nome: dados básicos, alergias, condições crônicas, histórico médico, consultas, exames e se está internado (com quarto e motivo)."
+      },
+      {
+        "name": "check_symptoms",
+        "description": "Compara uma lista de sintomas com o banco de doenças do hospital e devolve hipóteses diagnósticas, nível de urgência, especialidade recomendada e orientações de saúde."
+      },
+      {
+        "name": "schedule_appointment",
+        "description": "Agenda uma consulta para um paciente em uma especialidade, data e hora, atribuindo um médico e recusando conflitos de horário."
+      }
+    ]
+  },
+  "http": {
+    "manifest": "GET /api/manifest",
+    "hospital": "GET /api/hospital",
+    "patients": "GET /api/patients?q=&admitted=",
+    "record": "GET /api/patients?patient=pat-001",
+    "doctors": "GET /api/doctors?specialty=",
+    "symptoms": "GET /api/symptoms?symptoms=febre,tosse",
+    "appointments": "GET /api/appointments?patient=, POST /api/appointments",
+    "exams": "GET /api/exams?patient=, POST /api/exams",
+    "history": "POST /api/history",
+    "mcp": "POST /api/mcp"
+  }
+}

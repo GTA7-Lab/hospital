@@ -46,7 +46,23 @@ local. As duas expõem exatamente as mesmas tools.
 |---|---|---|
 | `get_patient_record` | `patient` — id (`pat-001`) ou parte do nome | prontuário completo, com `admitted`, quarto, histórico, consultas e exames |
 | `check_symptoms` | `symptoms` — lista de sintomas | hipóteses ordenadas, `emergency`, urgência, especialidade recomendada e orientação |
-| `schedule_appointment` | `patient`, `specialty`, `date` (AAAA-MM-DD), `time` (HH:MM) | a consulta criada, com o médico atribuído |
+| `register_patient` | `name`, `birth_date`, `magic_word` (+ `blood_type`, `allergies`, `chronic_conditions`) | o prontuário aberto, com o número novo |
+| `schedule_appointment` | `patient`, `specialty`, `date` (AAAA-MM-DD), `time` (HH:MM), `magic_word` | a consulta criada, com o médico atribuído |
+| `reschedule_appointment` | `appointment` (número da consulta ou nome do paciente), `date`, `time`, `magic_word` | a consulta remarcada, dizendo de quando era |
+
+## A palavra mágica
+
+As três tools que **escrevem** — cadastrar, agendar e remarcar — só funcionam com o
+parâmetro `magic_word`. As de leitura seguem abertas, para o Core poder consultar e fazer
+triagem sem segredo nenhum. A trava fica na camada de serviço, então vale igual para o
+MCP e para a API HTTP: `POST /api/appointments` sem a palavra é recusado do mesmo jeito.
+
+A palavra é aceita sem diferenciar maiúsculas, acentos ou espaços em volta. Quem chama
+sem ela recebe um pedido em português, não um `401`.
+
+Isto é um portão de demonstração, **não autenticação**: a palavra viaja no próprio pedido
+e o valor padrão está num repositório público. `HOSPITAL_MAGIC_WORD` troca o valor sem
+mexer no código.
 
 A busca por paciente é tolerante: aceita id ou nome parcial, sem acento e sem
 diferenciar maiúsculas. `check_symptoms` faz o mesmo com os sintomas, então "dor de
@@ -89,11 +105,14 @@ orienta e encaminha, não substitui avaliação médica.
 | `GET /api/hospital` | dados do hospital, especialidades e contadores |
 | `GET /api/patients?q=&admitted=` | lista pacientes, filtrando por nome e internação |
 | `GET /api/patients?patient=pat-001` | prontuário completo |
+| `POST /api/patients` | cadastra paciente — `name`, `birth_date`, `magic_word` |
 | `GET /api/doctors?specialty=` | médicos por especialidade |
 | `GET /api/symptoms?symptoms=febre,tosse` | triagem |
-| `GET/POST /api/appointments` | consultas — POST com `patient`, `specialty`, `date`, `time` |
+| `GET/POST/PATCH /api/appointments` | consultas — POST marca, PATCH remarca (`appointment`, `date`, `time`) |
 | `GET/POST /api/exams` | exames — POST com `patient`, `exam`, `date`, `time` |
 | `POST /api/history` | novo registro no histórico — `patient`, `type`, `description` |
+
+Todo POST e PATCH da tabela pede `magic_word` junto.
 | `POST /api/mcp` | endpoint MCP |
 
 A interface em `public/index.html` usa essas rotas: busca de pacientes com o status de

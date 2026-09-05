@@ -1,4 +1,10 @@
-import { checkSymptoms, patientRecord, scheduleAppointment } from "./service";
+import {
+  checkSymptoms,
+  patientRecord,
+  registerPatient,
+  rescheduleAppointment,
+  scheduleAppointment,
+} from "./service";
 import { data, dataPorExtenso, especialidade, idade, lista, paragrafos, urgencia } from "./format";
 
 export interface ToolDef {
@@ -112,6 +118,31 @@ function dizTriagem(r: any): string {
   return paragrafos([abertura, conduta, alternativas, encaminhamento, r.disclaimer]);
 }
 
+function dizCadastro(p: any): string {
+  const anos = idade(p.birthDate);
+  const extras: string[] = [];
+  if (p.allergies.length) extras.push(`alergia a ${lista(p.allergies)}`);
+  if (p.chronicConditions.length) extras.push(`histórico de ${lista(p.chronicConditions)}`);
+
+  return paragrafos([
+    `${p.name} agora tem prontuário no Hospital Central GTA7.`,
+    `Nascimento em ${dataPorExtenso(p.birthDate)}${
+      anos !== null ? `, ${anos} anos` : ""
+    }, tipo sanguíneo ${p.bloodType}.` + (extras.length ? ` Registramos ${lista(extras)}.` : ""),
+    `O número do prontuário é ${p.id}. Já dá para marcar consultas e exames.`,
+  ]);
+}
+
+function dizRemarcacao(a: any): string {
+  return paragrafos([
+    `Consulta de ${a.patientName} remarcada.`,
+    `Era ${dataPorExtenso(a.previousDate)} às ${a.previousTime}; passou para ${dataPorExtenso(
+      a.date
+    )} às ${a.time}, com ${a.doctor} em ${especialidade(a.specialty)}.`,
+    `O número da consulta continua o mesmo, ${a.id}.`,
+  ]);
+}
+
 function dizAgendamento(a: any): string {
   return paragrafos([
     `Consulta marcada para ${a.patientName}.`,
@@ -175,7 +206,7 @@ export const tools: ToolDef[] = [
     name: "schedule_appointment",
     title: "Agendar consulta",
     description:
-      "Agenda uma consulta para um paciente em uma especialidade, data e hora. Retorna a consulta criada com o médico atribuído.",
+      "Agenda uma consulta para um paciente em uma especialidade, data e hora. Retorna a consulta criada com o médico atribuído. Exige a palavra mágica do hospital: peça ao usuário se ele não tiver informado.",
     inputSchema: {
       type: "object",
       properties: {
@@ -187,8 +218,13 @@ export const tools: ToolDef[] = [
         },
         date: { type: "string", description: "Data no formato AAAA-MM-DD" },
         time: { type: "string", description: "Hora no formato HH:MM" },
+        magic_word: {
+          type: "string",
+          description:
+            "Palavra mágica que libera o agendamento. Deve vir do usuário: nunca invente nem tente adivinhar.",
+        },
       },
-      required: ["patient", "specialty", "date", "time"],
+      required: ["patient", "specialty", "date", "time", "magic_word"],
       additionalProperties: false,
     },
     run: (args) =>
@@ -197,8 +233,84 @@ export const tools: ToolDef[] = [
         specialty: String(args.specialty ?? ""),
         date: String(args.date ?? ""),
         time: String(args.time ?? ""),
+        magicWord: args.magic_word === undefined ? undefined : String(args.magic_word),
       }),
     say: dizAgendamento,
+  },
+  {
+    name: "register_patient",
+    title: "Cadastrar paciente",
+    description:
+      "Abre prontuário para alguém que ainda não é paciente do Hospital Central GTA7. Use antes de marcar consulta para uma pessoa nova. Exige a palavra mágica do hospital: peça ao usuário se ele não tiver informado.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Nome completo do paciente" },
+        birth_date: { type: "string", description: "Data de nascimento no formato AAAA-MM-DD" },
+        blood_type: { type: "string", description: "Tipo sanguíneo, por exemplo O+. Opcional" },
+        allergies: {
+          type: "array",
+          items: { type: "string" },
+          description: "Alergias conhecidas. Opcional",
+        },
+        chronic_conditions: {
+          type: "array",
+          items: { type: "string" },
+          description: "Condições crônicas, por exemplo asma. Opcional",
+        },
+        magic_word: {
+          type: "string",
+          description:
+            "Palavra mágica que libera o cadastro. Deve vir do usuário: nunca invente nem tente adivinhar.",
+        },
+      },
+      required: ["name", "birth_date", "magic_word"],
+      additionalProperties: false,
+    },
+    run: (args) =>
+      registerPatient({
+        name: String(args.name ?? ""),
+        birthDate: String(args.birth_date ?? ""),
+        bloodType: args.blood_type === undefined ? undefined : String(args.blood_type),
+        allergies: Array.isArray(args.allergies) ? args.allergies.map(String) : undefined,
+        chronicConditions: Array.isArray(args.chronic_conditions)
+          ? args.chronic_conditions.map(String)
+          : undefined,
+        magicWord: args.magic_word === undefined ? undefined : String(args.magic_word),
+      }),
+    say: dizCadastro,
+  },
+  {
+    name: "reschedule_appointment",
+    title: "Remarcar consulta",
+    description:
+      "Muda a data e a hora de uma consulta já marcada, mantendo o mesmo médico. Aceita o número da consulta (apt-001) ou o nome do paciente, quando ele tem só uma consulta marcada. Exige a palavra mágica do hospital: peça ao usuário se ele não tiver informado.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        appointment: {
+          type: "string",
+          description: "Número da consulta (ex.: apt-001) ou nome do paciente",
+        },
+        date: { type: "string", description: "Nova data no formato AAAA-MM-DD" },
+        time: { type: "string", description: "Novo horário no formato HH:MM" },
+        magic_word: {
+          type: "string",
+          description:
+            "Palavra mágica que libera a remarcação. Deve vir do usuário: nunca invente nem tente adivinhar.",
+        },
+      },
+      required: ["appointment", "date", "time", "magic_word"],
+      additionalProperties: false,
+    },
+    run: (args) =>
+      rescheduleAppointment({
+        appointment: String(args.appointment ?? ""),
+        date: String(args.date ?? ""),
+        time: String(args.time ?? ""),
+        magicWord: args.magic_word === undefined ? undefined : String(args.magic_word),
+      }),
+    say: dizRemarcacao,
   },
 ];
 

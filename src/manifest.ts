@@ -11,11 +11,21 @@ export const manifest = {
     "Consultar prontuário e histórico médico de um paciente",
     "Verificar se um paciente está internado e em qual quarto",
     "Triagem por sintomas com hipóteses, urgência e orientações",
+    "Cadastrar novos pacientes",
     "Agendar consultas por especialidade",
+    "Remarcar consultas",
     "Agendar exames",
     "Listar médicos por especialidade",
   ],
-  tools: ["get_patient_record", "check_symptoms", "schedule_appointment"],
+  tools: [
+    "get_patient_record",
+    "check_symptoms",
+    "schedule_appointment",
+    "register_patient",
+    "reschedule_appointment",
+  ],
+  /** As escritas pedem a palavra magica; as leituras sao abertas. */
+  writesRequireMagicWord: true,
   mcp: { transport: "http", endpoint: "/api/mcp" },
   endpoints: {
     manifest: "/api/manifest",

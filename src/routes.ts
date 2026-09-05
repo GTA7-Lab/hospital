@@ -9,7 +9,9 @@ import {
   listDoctors,
   listPatients,
   patientRecord,
+  registerPatient,
   requirePatient,
+  rescheduleAppointment,
   scheduleAppointment,
   scheduleExam,
 } from "./service";
@@ -22,7 +24,19 @@ export const manifestRoute: Handler = () => ok(manifest);
 
 export const hospitalRoute: Handler = () => ok(hospitalInfo());
 
-export const patientsRoute: Handler = ({ query }) => {
+export const patientsRoute: Handler = ({ method, query, body }) => {
+  if (method === "POST") {
+    return created(
+      registerPatient({
+        name: body?.name,
+        birthDate: body?.birth_date ?? body?.birthDate,
+        bloodType: body?.blood_type ?? body?.bloodType,
+        allergies: body?.allergies,
+        chronicConditions: body?.chronic_conditions ?? body?.chronicConditions,
+        magicWord: body?.magic_word ?? body?.magicWord,
+      })
+    );
+  }
   const patient = query.get("patient") ?? query.get("id");
   if (patient) return ok(patientRecord(patient));
   const admitted = query.get("admitted");
@@ -52,10 +66,21 @@ export const appointmentsRoute: Handler = ({ method, query, body }) => {
         specialty: body?.specialty,
         date: body?.date,
         time: body?.time,
+        magicWord: body?.magic_word ?? body?.magicWord,
       })
     );
   }
-  if (method !== "GET") return bad("Use GET ou POST");
+  if (method === "PATCH") {
+    return ok(
+      rescheduleAppointment({
+        appointment: body?.appointment ?? body?.id,
+        date: body?.date,
+        time: body?.time,
+        magicWord: body?.magic_word ?? body?.magicWord,
+      })
+    );
+  }
+  if (method !== "GET") return bad("Use GET, POST ou PATCH");
   return ok({ appointments: listAppointments(query.get("patient") ?? undefined) });
 };
 
@@ -67,6 +92,7 @@ export const examsRoute: Handler = ({ method, query, body }) => {
         exam: body?.exam,
         date: body?.date,
         time: body?.time,
+        magicWord: body?.magic_word ?? body?.magicWord,
       })
     );
   }
@@ -87,6 +113,7 @@ export const historyRoute: Handler = ({ method, body }) => {
       description: body?.description,
       date: body?.date,
       doctorId: body?.doctorId,
+      magicWord: body?.magic_word ?? body?.magicWord,
     })
   );
 };

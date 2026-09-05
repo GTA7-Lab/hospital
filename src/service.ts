@@ -11,6 +11,26 @@ export class ServiceError extends Error {
   }
 }
 
+/**
+ * Palavra magica que libera as escritas (marcar consulta, marcar exame,
+ * registrar no historico). As leituras seguem abertas.
+ *
+ * Isto e um portao de demonstracao, nao autenticacao: a palavra viaja no
+ * proprio pedido e o valor padrao esta num repositorio publico. Para algo
+ * real, HOSPITAL_MAGIC_WORD troca o valor sem mexer no codigo.
+ */
+export const MAGIC_WORD = process.env.HOSPITAL_MAGIC_WORD ?? "heart";
+
+/** Aceita a palavra sem diferenciar maiuscula, acento ou espaco em volta. */
+export function requireMagicWord(word?: string): void {
+  if (normalize(word ?? "") !== normalize(MAGIC_WORD)) {
+    throw new ServiceError(
+      "Para marcar consultas e exames ou registrar algo no prontuário, o Hospital Central GTA7 pede a palavra mágica. Informe ela junto com o pedido.",
+      403
+    );
+  }
+}
+
 export function hospitalInfo() {
   return {
     ...db.hospital,
@@ -163,7 +183,9 @@ export function scheduleAppointment(input: {
   specialty: string;
   date: string;
   time: string;
+  magicWord?: string;
 }): Appointment & { patientName: string; doctor: string } {
+  requireMagicWord(input.magicWord);
   const p = requirePatient(input.patient);
   validateDateTime(input.date, input.time);
 
@@ -200,12 +222,131 @@ export function scheduleAppointment(input: {
   return { ...appointment, patientName: p.name, doctor: doctor.name };
 }
 
+/** Abre prontuario para quem ainda nao e paciente da casa. */
+export function registerPatient(input: {
+  name: string;
+  birthDate: string;
+  bloodType?: string;
+  allergies?: string[];
+  chronicConditions?: string[];
+  magicWord?: string;
+}): Patient {
+  requireMagicWord(input.magicWord);
+
+  const name = input.name?.trim();
+  if (!name) throw new ServiceError("Me diga o nome completo do paciente.");
+  if (!DATE_RE.test(input.birthDate ?? "")) {
+    throw new ServiceError(
+      "Não entendi a data de nascimento. Ela precisa vir como ano-mês-dia, por exemplo 1990-05-21."
+    );
+  }
+  if (input.birthDate > new Date().toISOString().slice(0, 10)) {
+    throw new ServiceError("A data de nascimento está no futuro. Confira o ano.");
+  }
+
+  const jaExiste = db.patients.find((p) => normalize(p.name) === normalize(name));
+  if (jaExiste) {
+    throw new ServiceError(
+      `${jaExiste.name} já tem prontuário aqui, com o número ${jaExiste.id}. Não precisa cadastrar de novo.`,
+      409
+    );
+  }
+
+  const patient: Patient = {
+    id: nextId("pat", db.patients),
+    name,
+    birthDate: input.birthDate,
+    bloodType: input.bloodType?.trim() || "não informado",
+    allergies: input.allergies ?? [],
+    chronicConditions: input.chronicConditions ?? [],
+    admission: null,
+    medicalHistory: [],
+  };
+  db.patients.push(patient);
+  persist();
+  return patient;
+}
+
+/** Muda a data e a hora de uma consulta que ja existe. */
+export function rescheduleAppointment(input: {
+  appointment: string;
+  date: string;
+  time: string;
+  magicWord?: string;
+}): Appointment & {
+  patientName: string;
+  doctor: string;
+  previousDate: string;
+  previousTime: string;
+} {
+  requireMagicWord(input.magicWord);
+  validateDateTime(input.date, input.time);
+
+  const key = normalize(input.appointment ?? "");
+  if (!key) throw new ServiceError("Me diga qual consulta você quer remarcar.");
+
+  // aceita o numero da consulta, ou o nome do paciente quando ele so tem uma
+  let target = db.appointments.find((a) => normalize(a.id) === key);
+  if (!target) {
+    const p = findPatient(input.appointment);
+    if (!p) {
+      throw new ServiceError(
+        `Não encontrei consulta nem paciente com "${input.appointment}".`,
+        404
+      );
+    }
+    const doPaciente = db.appointments.filter(
+      (a) => a.patientId === p.id && a.status === "agendada"
+    );
+    if (doPaciente.length === 0) {
+      throw new ServiceError(`${p.name} não tem nenhuma consulta marcada para remarcar.`, 404);
+    }
+    if (doPaciente.length > 1) {
+      const opcoes = doPaciente.map((a) => `${a.id} (${a.date} às ${a.time})`).join(", ");
+      throw new ServiceError(
+        `${p.name} tem mais de uma consulta marcada: ${opcoes}. Me diga o número da que você quer remarcar.`
+      );
+    }
+    target = doPaciente[0];
+  }
+
+  const clash = db.appointments.find(
+    (a) =>
+      a.id !== target!.id &&
+      a.doctorId === target!.doctorId &&
+      a.date === input.date &&
+      a.time === input.time
+  );
+  if (clash) {
+    throw new ServiceError(
+      `${doctorName(target.doctorId)} já tem uma consulta marcada nesse dia e horário. Escolha outro horário.`,
+      409
+    );
+  }
+
+  const previousDate = target.date;
+  const previousTime = target.time;
+  target.date = input.date;
+  target.time = input.time;
+  persist();
+
+  return {
+    ...target,
+    patientName: db.patients.find((p) => p.id === target!.patientId)?.name ?? target.patientId,
+    doctor: doctorName(target.doctorId),
+    previousDate,
+    previousTime,
+  };
+}
+
 export function scheduleExam(input: {
   patient: string;
   exam: string;
   date: string;
   time: string;
+  magicWord?: string;
 }): Exam & { patientName: string } {
+  requireMagicWord(input.magicWord);
   const p = requirePatient(input.patient);
   validateDateTime(input.date, input.time);
   if (!input.exam?.trim()) throw new ServiceError("Me diga qual exame você quer marcar.");
@@ -242,7 +383,9 @@ export function addHistoryEntry(input: {
   description: string;
   date?: string;
   doctorId?: string;
+  magicWord?: string;
 }) {
+  requireMagicWord(input.magicWord);
   const p = requirePatient(input.patient);
   const types = ["consulta", "exame", "procedimento", "tratamento"];
   if (!types.includes(input.type)) {

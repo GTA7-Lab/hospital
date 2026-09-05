@@ -81,6 +81,9 @@
         <div class="row">
           <input id="ag-data" type="date" />
           <input id="ag-hora" type="time" />
+        </div>
+        <div class="row">
+          <input id="ag-palavra" placeholder="Palavra magica" />
           <button class="go" id="marcar">Marcar consulta</button>
         </div>
         <div id="ag-resultado"></div>
@@ -172,6 +175,7 @@
             specialty: $("ag-especialidade").value,
             date: $("ag-data").value,
             time: $("ag-hora").value,
+            magic_word: $("ag-palavra").value,
           }),
         });
         const r = await res.json();

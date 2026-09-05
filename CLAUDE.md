@@ -30,7 +30,15 @@ conditions    [{ id, name, symptoms[], specialty, urgency, guidance }]
 | --- | --- | --- |
 | `get_patient_record` | `patient` (id ou nome) | prontuario completo + `admitted` + quarto |
 | `check_symptoms` | `symptoms` (string[]) | hipoteses, urgencia, especialidade, orientacoes |
-| `schedule_appointment` | `patient`, `specialty`, `date` (AAAA-MM-DD), `time` (HH:MM) | consulta criada com medico |
+| `register_patient` | `name`, `birth_date`, `magic_word` (+ opcionais) | prontuario aberto |
+| `schedule_appointment` | `patient`, `specialty`, `date`, `time`, `magic_word` | consulta criada com medico |
+| `reschedule_appointment` | `appointment` (id ou nome), `date`, `time`, `magic_word` | consulta remarcada |
+
+**Palavra magica**: `MAGIC_WORD` em `src/service.ts`, valor `heart`, sobrescrito por
+`HOSPITAL_MAGIC_WORD`. `requireMagicWord()` roda no inicio de toda escrita
+(`registerPatient`, `scheduleAppointment`, `rescheduleAppointment`, `scheduleExam`,
+`addHistoryEntry`). Fica na camada de servico de proposito: se ficasse so nas tools, o
+`POST /api/appointments` passaria por cima. Leituras seguem abertas.
 
 Transportes: HTTP (`/api/mcp`, JSON-RPC 2.0 via POST) e stdio (`npm run mcp`).
 

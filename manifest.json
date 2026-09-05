@@ -7,10 +7,17 @@
     "consultar_historico_medico",
     "verificar_internacao",
     "triagem_por_sintomas",
+    "cadastrar_paciente",
     "agendar_consulta",
+    "remarcar_consulta",
     "agendar_exame",
     "consultar_medicos"
   ],
+  "auth": {
+    "type": "palavra_magica",
+    "applies_to": "escritas",
+    "note": "Cadastrar, agendar, remarcar e registrar no histórico exigem o parâmetro magic_word. As leituras (prontuário, triagem, médicos) são abertas."
+  },
   "mcp": {
     "transport": "http",
     "endpoint": "/api/mcp",
@@ -25,7 +32,15 @@
       },
       {
         "name": "schedule_appointment",
-        "description": "Agenda uma consulta para um paciente em uma especialidade, data e hora, atribuindo um médico e recusando conflitos de horário."
+        "description": "Agenda uma consulta para um paciente em uma especialidade, data e hora, atribuindo um médico e recusando conflitos de horário. Exige magic_word."
+      },
+      {
+        "name": "register_patient",
+        "description": "Abre prontuário para alguém que ainda não é paciente da casa, para em seguida poder marcar consultas e exames. Exige magic_word."
+      },
+      {
+        "name": "reschedule_appointment",
+        "description": "Muda a data e a hora de uma consulta já marcada, mantendo o mesmo médico e o mesmo número. Exige magic_word."
       }
     ]
   },
@@ -34,9 +49,10 @@
     "hospital": "GET /api/hospital",
     "patients": "GET /api/patients?q=&admitted=",
     "record": "GET /api/patients?patient=pat-001",
+    "register": "POST /api/patients",
     "doctors": "GET /api/doctors?specialty=",
     "symptoms": "GET /api/symptoms?symptoms=febre,tosse",
-    "appointments": "GET /api/appointments?patient=, POST /api/appointments",
+    "appointments": "GET /api/appointments?patient=, POST /api/appointments, PATCH /api/appointments",
     "exams": "GET /api/exams?patient=, POST /api/exams",
     "history": "POST /api/history",
     "mcp": "POST /api/mcp"
